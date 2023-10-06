@@ -5,7 +5,7 @@
 
 __global__ void simple(float *c) 
 {
-	c[threadIdx.x] = threadIdx.x;
+	c[threadIdx.x] = threadIdx.x * threadIdx.x;
 }
 
 int main()
