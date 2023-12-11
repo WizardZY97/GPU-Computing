@@ -1,0 +1,1 @@
+/usr/bin/g++ CMakeFiles/gemm_cuda.dir/main_gpu.cu.o -o gemm_cuda  -lcudadevrt -lcudart_static -lrt -lpthread -ldl  -L"/usr/local/cuda/targets/x86_64-linux/lib/stubs" -L"/usr/local/cuda/targets/x86_64-linux/lib"

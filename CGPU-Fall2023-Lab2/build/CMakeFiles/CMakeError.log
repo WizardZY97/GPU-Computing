@@ -1,0 +1,19 @@
+Determining if the function sgemm_ exists failed with the following output:
+Change Dir: /user/3/.base/wuzho/home/Desktop/MOSIG-M2/GPU-Computing/CGPU-Fall2023-Lab2/build/CMakeFiles/CMakeTmp
+
+Run Build Command(s):/usr/bin/gmake -f Makefile cmTC_e0e49/fast && /usr/bin/gmake  -f CMakeFiles/cmTC_e0e49.dir/build.make CMakeFiles/cmTC_e0e49.dir/build
+gmake[1]: Entering directory '/user/3/.base/wuzho/home/Desktop/MOSIG-M2/GPU-Computing/CGPU-Fall2023-Lab2/build/CMakeFiles/CMakeTmp'
+Building CXX object CMakeFiles/cmTC_e0e49.dir/CheckFunctionExists.cxx.o
+/usr/bin/c++   -DCHECK_FUNCTION_EXISTS=sgemm_ -std=gnu++11 -o CMakeFiles/cmTC_e0e49.dir/CheckFunctionExists.cxx.o -c /user/3/.base/wuzho/home/Desktop/MOSIG-M2/GPU-Computing/CGPU-Fall2023-Lab2/build/CMakeFiles/CheckFunctionExists/CheckFunctionExists.cxx
+Linking CXX executable cmTC_e0e49
+/usr/local/bin/cmake -E cmake_link_script CMakeFiles/cmTC_e0e49.dir/link.txt --verbose=1
+/usr/bin/c++  -DCHECK_FUNCTION_EXISTS=sgemm_ CMakeFiles/cmTC_e0e49.dir/CheckFunctionExists.cxx.o -o cmTC_e0e49 
+/usr/bin/ld: CMakeFiles/cmTC_e0e49.dir/CheckFunctionExists.cxx.o: in function `main':
+CheckFunctionExists.cxx:(.text+0x14): undefined reference to `sgemm_'
+collect2: error: ld returned 1 exit status
+gmake[1]: *** [CMakeFiles/cmTC_e0e49.dir/build.make:99: cmTC_e0e49] Error 1
+gmake[1]: Leaving directory '/user/3/.base/wuzho/home/Desktop/MOSIG-M2/GPU-Computing/CGPU-Fall2023-Lab2/build/CMakeFiles/CMakeTmp'
+gmake: *** [Makefile:127: cmTC_e0e49/fast] Error 2
+
+
+
