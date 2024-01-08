@@ -9,7 +9,7 @@ int main(int argc, char *argv[])
     // Target directory (pictures)
     std::string folder_path = "./Images";
 
-    int num_hashes = 5, dim = SIZE;
+    int num_hashes = 15, dim = SIZE*SIZE;
     LSHCalculator lsh(num_hashes, dim);
 
     std::unordered_map<std::string, std::vector<int>> mapFileHash;
@@ -25,6 +25,7 @@ int main(int argc, char *argv[])
             std::vector<std::vector<int>> input_image = readImageToVec(filename);
             std::vector<std::vector<int>> feature_image = applySobel(input_image);
             std::vector<int> feature_vec = flatten(feature_image);
+
             std::vector<int> hash = lsh.computeHash(feature_vec);
 
             std::pair<std::string, std::vector<int>> one_pair(s, hash);

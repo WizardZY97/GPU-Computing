@@ -16,7 +16,7 @@ private:
     std::vector<int> hash_vector; // Hash function
 
 public:
-    LSHHashFunction(int dim);
+    LSHHashFunction(int dim, int order);
 
     // Compute the hash value from the input feature vector
     int hash(const std::vector<int> &feature) const;
