@@ -37,8 +37,6 @@ int LSHHashFunction::hash(const std::vector<int> &feature) const
 LSHCalculator::LSHCalculator(int num_hashes, int dim)
 {
     // Set the number of hash functions needed
-    p < a not similar
-    p > b similar
     m_num_hashes = num_hashes;
 
     // Initialize a batch of hash functions
