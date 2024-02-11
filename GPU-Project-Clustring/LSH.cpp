@@ -7,19 +7,12 @@ LSHHashFunction::LSHHashFunction(int dim, int order)
     // Set the dimension of the hash function
     m_dim = dim;
 
-    // Initialize a hash funtion
+    // Initialize a hash function
     srand(time(nullptr) + order);
     for (int i = 0; i < dim; ++i)
     {
         hash_vector.push_back(rand() % 2 == 0 ? 1 : -1);
     }
-
-    // std::cout << "One hash func: ";
-    // for (auto& n : hash_vector)
-    // {
-    //     std::cout << n << ", ";
-    // }
-    // std::cout << std::endl;
 }
 
 // Compute the hash value from the input feature vector
@@ -64,17 +57,21 @@ std::vector<int> LSHCalculator::computeHash(const std::vector<int> &feature) con
 // Compute the similarity between two input feature vectors
 double LSHCalculator::calculateSimilarity(const std::vector<int> &hash1, const std::vector<int> &hash2) const
 {
-    int common_hashes = 0;
+    double dot_product = 0, norm_hash1 = 0, norm_hash2 = 0;
     for (int i = 0; i < m_num_hashes; ++i)
     {
-        if (hash1[i] == hash2[i])
-        {
-            common_hashes++;
-        }
-    }
+        double d_hash1 = static_cast<double>(hash1[i]);
+        double d_hash2 = static_cast<double>(hash2[i]);
 
-    // Jaccard similarity coefficient
-    double sim = static_cast<double>(common_hashes) / static_cast<double>(m_num_hashes);
+        dot_product += d_hash1 * d_hash2;
+        norm_hash1 += d_hash1 * d_hash1;
+        norm_hash2 += d_hash2 * d_hash2;
+    }
+    norm_hash1 = sqrt(norm_hash1);
+    norm_hash2 = sqrt(norm_hash2);
+
+    // Cosine similarity coefficient
+    double sim = dot_product / (norm_hash1 * norm_hash2);
 
     return sim;
 }

@@ -10,7 +10,7 @@ SRC_DIR=.
 
 CPP_FILES=$(wildcard $(SRC_DIR)/*.cpp)
 
-CPP_OBJ_FILES=clustering.o image_preproc.o LSH.o
+CPP_OBJ_FILES=clustering_CPU.o image_preproc.o LSH.o
 
 TARGET=prog
 

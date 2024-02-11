@@ -9,10 +9,11 @@ int main(int argc, char *argv[])
     // Target directory (pictures)
     std::string folder_path = "./Images";
 
-    int num_hashes = 15, dim = SIZE*SIZE;
+    int num_hashes = 32, dim = SIZE*SIZE;
     LSHCalculator lsh(num_hashes, dim);
 
     std::unordered_map<std::string, std::vector<int>> mapFileHash;
+    std::vector<std::string> files;
 
     for (const auto &entry : std::filesystem::directory_iterator(folder_path))
     {
@@ -30,24 +31,23 @@ int main(int argc, char *argv[])
 
             std::pair<std::string, std::vector<int>> one_pair(s, hash);
 
+            files.push_back(s);
             mapFileHash.insert(one_pair);
         }
     }
 
-    int i = 0;
-    std::vector<int> hash1, hash2;
-    for (const auto& elem : mapFileHash)
+    for (long unsigned int i = 0; i < files.size(); i++)
     {
-        std::cout << elem.first << std::endl;
-        if (i == 0)
-            hash1 = elem.second;
-        else
-            hash2 = elem.second;
-        i++;
-    }
-    double similarity = lsh.calculateSimilarity(hash1, hash2);
+        for (long unsigned int j = i + 1; j < files.size(); j++)
+        {
+            std::vector<int> hash1 = mapFileHash.at(files[i]);
+            std::vector<int> hash2 = mapFileHash.at(files[j]);
 
-    std::cout << "Similarity: " << similarity << std::endl;
+            double similarity = lsh.calculateSimilarity(hash1, hash2);
+
+            std::cout << "Similarity between " << files[i] << " and " << files[j] << " : " << similarity << std::endl;
+        }
+    }
 
     return 0;
 }

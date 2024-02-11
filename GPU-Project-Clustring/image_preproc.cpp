@@ -1,5 +1,26 @@
 #include "image_preproc.h"
 
+void readImageToArr(const char* filename, int* arr)
+{
+    // Read the image from the given file name
+    cimg_library::CImg<unsigned char> image(filename);
+
+    // Convert the RGB image into a gray one
+    cimg_library::CImg<unsigned char> grayImage = image.get_RGBtoYCbCr().channel(0);
+
+    // Resize to 1024*1024
+    cimg_library::CImg<unsigned char> resized_image = grayImage.resize(SIZE, SIZE);
+
+    for (int i = 0; i < SIZE; i++)
+    {
+        for (int j = 0; j < SIZE; j++)
+        {
+            arr[i * SIZE + j] = *resized_image.data(j, i, 0, 0);
+        }
+    }
+    
+}
+
 std::vector<std::vector<int>> readImageToVec(const char* filename) 
 {
     // Read the image from the given file name
@@ -8,7 +29,7 @@ std::vector<std::vector<int>> readImageToVec(const char* filename)
     // Convert the RGB image into a gray one
     cimg_library::CImg<unsigned char> grayImage = image.get_RGBtoYCbCr().channel(0);
 
-    // Resize to 512x512
+    // Resize to 1024*1024
     int target_width = SIZE, target_height = SIZE;
     cimg_library::CImg<unsigned char> resized_image = grayImage.resize(target_width, target_height);
 

@@ -7,6 +7,8 @@
 
 #define SIZE 1024
 
+void readImageToArr(const char* filename, int* arr);
+
 std::vector<std::vector<int>> readImageToVec(const char* filename);
 
 std::vector<std::vector<int>> applySobel(const std::vector<std::vector<int>>& inputImage);
