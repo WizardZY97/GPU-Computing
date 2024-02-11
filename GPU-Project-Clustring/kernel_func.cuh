@@ -24,14 +24,14 @@ applySobelKernel(int *src_image, int *res_image, int row, int col)
         }
 
         // Calculate the value of gradient
-        res_image[i * row + j] = static_cast<int>(sqrt(gx * gx + gy * gy));
+        res_image[i * row + j] = static_cast<int>(sqrtf(gx * gx + gy * gy));
     }
 }
 
 __global__ void
 computeHashKernel(int *hash, int *img, int *res, int n)
 {
-    __shared__ int sdata[blockDim.x];
+    __shared__ int sdata[1024];
 
     int idx = blockIdx.x * blockDim.x + threadIdx.x;
     int tid = threadIdx.x;

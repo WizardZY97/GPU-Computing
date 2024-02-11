@@ -2,7 +2,6 @@
 #include <filesystem>
 #include <unordered_map>
 #include "image_preproc.h"
-
 #include "kernel_func.cuh"
 
 int main(int argc, char *argv[])
@@ -10,7 +9,7 @@ int main(int argc, char *argv[])
     // Target directory (pictures)
     std::string folder_path = "./Images";
 
-    int num_hashes = 32, dim = SIZE*SIZE, row = SIZE, col = SIZE;
+    int num_hashes = 32, dim = SIZE*SIZE;
 
     /******************* Build Hash Functions Start *******************/
 
@@ -33,6 +32,7 @@ int main(int argc, char *argv[])
     /******************* Build Hash Functions End *********************/
 
     std::unordered_map<std::string, std::vector<int>> mapFileHash;
+    std::vector<std::string> files;
 
     for (const auto &entry : std::filesystem::directory_iterator(folder_path))
     {
@@ -79,7 +79,7 @@ int main(int argc, char *argv[])
 
             /******************* Kernel Compute Hash Start *******************/
 
-            int *d_hash_function, *d_feature_image_arr, *d_hash_value_collector; // device copies
+            int *d_hash_function, *d_hash_value_collector; // device copies
 
             // allocate the GPU memory space
             cudaMalloc((void **)&d_hash_function, sizeof(int)*dim); 
@@ -132,7 +132,7 @@ int main(int argc, char *argv[])
             std::vector<int> hash2 = mapFileHash.at(files[j]);
 
             double dot_product = 0, norm_hash1 = 0, norm_hash2 = 0;
-            for (int k = 0; k < m_num_hashes; ++k)
+            for (int k = 0; k < num_hashes; ++k)
             {
                 double d_hash1 = static_cast<double>(hash1[k]);
                 double d_hash2 = static_cast<double>(hash2[k]);

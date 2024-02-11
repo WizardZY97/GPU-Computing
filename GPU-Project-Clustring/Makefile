@@ -16,9 +16,9 @@ TARGET=prog
 
 TARGET_GPU=prog_gpu
 
-SRC=clustering_GPU.cu kernel_func.cuh image_preproc.h
+SRC=clustering_GPU.cu image_preproc.o
 
-all: $(TARGET) $(TARGET_GPU) clean
+all: $(TARGET) clean
 
 $(TARGET): $(CPP_OBJ_FILES)
 	$(CC) $(CFLAGS) -o $@ $^ -I./CImg -lpthread -lX11
