@@ -1,11 +1,9 @@
 #include <iostream>
 #include <filesystem>
 #include <unordered_map>
-#include "LSH.h"
 #include "image_preproc.h"
 
-#include "image_preproc.cuh"
-#include "LSH.cuh"
+#include "kernel_func.cuh"
 
 int main(int argc, char *argv[])
 {
@@ -19,7 +17,7 @@ int main(int argc, char *argv[])
     // Too complex to get the correct random number in the Kernel function
     // Abandon the parallel way to create the Hash functions
 
-    int hash_functions = new int[num_hashes];
+    int **hash_functions = new int*[num_hashes];
 
     for (int i = 0; i < num_hashes; i++)
     {
@@ -62,7 +60,7 @@ int main(int argc, char *argv[])
 
             // Define the size of the Grid and the Block
             dim3 dimBlockSoble(32, 32, 1);
-            dim3 dimGridSoble(ceil(row / 32.0), ceil(col / 32.0), 1);
+            dim3 dimGridSoble(ceil(SIZE / 32.0), ceil(SIZE / 32.0), 1);
 
             // Execute the kernel fucntion of Soble
             applySobelKernel<<<dimGridSoble, dimBlockSoble>>>(d_original_image_arr, d_feature_image_arr, SIZE, SIZE);
@@ -76,8 +74,8 @@ int main(int argc, char *argv[])
 
             /******************* Kernel Soble Feature End *********************/
 
-            int hash_value_collector = new int[SIZE];// Equal to the number of blocks
-            vector<int> hashes_image;
+            int *hash_value_collector = new int[SIZE];// Equal to the number of blocks
+            std::vector<int> hashes_image;
 
             /******************* Kernel Compute Hash Start *******************/
 
@@ -120,7 +118,7 @@ int main(int argc, char *argv[])
 
             /******************* Kernel Compute Hash End *********************/
 
-            std::pair<std::string, std::vector<int>> one_pair(s, hash);
+            std::pair<std::string, std::vector<int>> one_pair(s, hashes_image);
 
             mapFileHash.insert(one_pair);
         }
@@ -133,9 +131,23 @@ int main(int argc, char *argv[])
             std::vector<int> hash1 = mapFileHash.at(files[i]);
             std::vector<int> hash2 = mapFileHash.at(files[j]);
 
-            double similarity = lsh.calculateSimilarity(hash1, hash2);
+            double dot_product = 0, norm_hash1 = 0, norm_hash2 = 0;
+            for (int k = 0; k < m_num_hashes; ++k)
+            {
+                double d_hash1 = static_cast<double>(hash1[k]);
+                double d_hash2 = static_cast<double>(hash2[k]);
 
-            std::cout << "Similarity between " << files[i] << " and " << files[j] << " : " << similarity << std::endl;
+                dot_product += d_hash1 * d_hash2;
+                norm_hash1 += d_hash1 * d_hash1;
+                norm_hash2 += d_hash2 * d_hash2;
+            }
+            norm_hash1 = sqrt(norm_hash1);
+            norm_hash2 = sqrt(norm_hash2);
+
+            // Cosine similarity coefficient
+            double sim = dot_product / (norm_hash1 * norm_hash2);
+
+            std::cout << "Similarity between " << files[i] << " and " << files[j] << " : " << sim << std::endl;
         }
     }
 

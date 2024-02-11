@@ -2,7 +2,7 @@ CC=g++
 NVCC=nvcc
 
 CFLAGS=-Wall -Werror
-NVCCFLAGS=-arch=sm_35
+NVCCFLAGS = -g -G -Xcompiler -Wall
 
 BUILD_DIR=.
 
@@ -14,10 +14,17 @@ CPP_OBJ_FILES=clustering_CPU.o image_preproc.o LSH.o
 
 TARGET=prog
 
+TARGET_GPU=prog_gpu
+
+SRC=clustering_GPU.cu kernel_func.cuh image_preproc.h
+
 all: $(TARGET) clean
 
 $(TARGET): $(CPP_OBJ_FILES)
 	$(CC) $(CFLAGS) -o $@ $^ -I./CImg -lpthread -lX11
+
+$(TARGET_GPU): $(SRC)
+	$(NVCC) $(NVCCFLAGS) $(SRC) -o $(TARGET_GPU) -I./CImg -lpthread -lX11
 
 $(BUILD_DIR)/%.o: $(SRC_DIR)/%.cpp
 	$(CC) $(CFLAGS) -c $< -o $@
