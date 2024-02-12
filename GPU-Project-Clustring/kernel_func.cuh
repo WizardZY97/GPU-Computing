@@ -8,8 +8,6 @@ applySobelKernel(int *src_image, int *res_image, int row, int col)
     int i = blockIdx.x * blockDim.x + threadIdx.x;
     int j = blockIdx.y * blockDim.y + threadIdx.y;
 
-    if (i == 0 && j == 0) printf("1\n");
-
     if (i >= 1 && j >= 1 && i < row - 1 && j < col - 1)
     {
         int gx = 0, gy = 0;
@@ -59,6 +57,7 @@ computeHashKernel(int *hash, int *img, int *res, int n)
         }
 	    __syncthreads();
     }
+    __syncthreads();
     
     if (tid == 0)
     {

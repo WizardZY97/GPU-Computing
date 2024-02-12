@@ -76,7 +76,7 @@ int main(int argc, char *argv[])
             cudaMalloc((void **)&d_feature_image_arr, sizeof(int)*dim); 
 
             // copy source data from CPU memory to GPU memory
-            cudaMemcpy(d_original_image_arr, original_image_arr, dim, cudaMemcpyHostToDevice);
+            cudaMemcpy(d_original_image_arr, original_image_arr, sizeof(int)*dim, cudaMemcpyHostToDevice);
 
             // Define the size of the Grid and the Block
             dim3 dimBlockSoble(32, 32, 1);
@@ -86,7 +86,7 @@ int main(int argc, char *argv[])
             applySobelKernel<<<dimGridSoble, dimBlockSoble>>>(d_original_image_arr, d_feature_image_arr, SIZE, SIZE);
 
             // copy result data from GPU memory back to CPU memory
-            cudaMemcpy(feature_image_arr, d_feature_image_arr, dim, cudaMemcpyDeviceToHost);
+            cudaMemcpy(feature_image_arr, d_feature_image_arr, sizeof(int)*dim, cudaMemcpyDeviceToHost);
 
             // Free the allocated GPU memory
             cudaFree(d_original_image_arr);
@@ -104,24 +104,24 @@ int main(int argc, char *argv[])
             dim3 dimBlockHashComp(1024, 1, 1);
             dim3 dimGridHashComp(ceil(dim / 1024.0), 1, 1);
             
-            cudaMalloc((void **)&d_feature_image_arr, sizeof(int)*dim); 
-            cudaMemcpy(d_feature_image_arr, feature_image_arr, dim, cudaMemcpyHostToDevice);
             for (int i = 0; i < num_hashes; i++) 
             {
                 int *hash_value_collector = new int[SIZE];// Equal to the number of blocks
                 
                 // allocate the GPU memory space
                 cudaMalloc((void **)&d_hash_function, sizeof(int)*dim); 
+                cudaMalloc((void **)&d_feature_image_arr, sizeof(int)*dim); 
                 cudaMalloc((void **)&d_hash_value_collector, sizeof(int)*SIZE);
 
                 // copy source data from CPU memory to GPU memory
-                cudaMemcpy(d_hash_function, hash_functions[i], dim, cudaMemcpyHostToDevice);
+                cudaMemcpy(d_hash_function, hash_functions[i], sizeof(int)*dim, cudaMemcpyHostToDevice);
+                cudaMemcpy(d_feature_image_arr, feature_image_arr, sizeof(int)*dim, cudaMemcpyHostToDevice);
 
                 // Execute the kernel fucntion of Soble
                 computeHashKernel<<<dimGridHashComp, dimBlockHashComp>>>(d_hash_function, d_feature_image_arr, d_hash_value_collector, dim);
 
                 // copy result data from GPU memory back to CPU memory
-                cudaMemcpy(hash_value_collector, d_hash_value_collector, SIZE, cudaMemcpyDeviceToHost);
+                cudaMemcpy(hash_value_collector, d_hash_value_collector, sizeof(int)*SIZE, cudaMemcpyDeviceToHost);
 
                 int hash_value = 0;
                 for (int j = 0; j < SIZE; j++)
@@ -134,10 +134,10 @@ int main(int argc, char *argv[])
                 // Free the allocated GPU memory
                 cudaFree(d_hash_function);
                 cudaFree(d_hash_value_collector);
+                cudaFree(d_feature_image_arr);
 
                 delete hash_value_collector;
             }
-            cudaFree(d_feature_image_arr);
 
             /******************* Kernel Compute Hash End *********************/
 
