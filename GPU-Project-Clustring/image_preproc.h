@@ -1,6 +1,7 @@
 #ifndef __IMAGE_PREPROC_H__
 #define __IMAGE_PREPROC_H__
 
+#define cimg_imagemagick_path "/user/3/wuzho/Desktop/MOSIG-M2/GPU-Computing/GPU-Project-Clustring/magick"
 #include "CImg/CImg.h"
 #include <cmath>
 #include <vector>

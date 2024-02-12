@@ -8,6 +8,8 @@ applySobelKernel(int *src_image, int *res_image, int row, int col)
     int i = blockIdx.x * blockDim.x + threadIdx.x;
     int j = blockIdx.y * blockDim.y + threadIdx.y;
 
+    if (i == 0 && j == 0) printf("1\n");
+
     if (i >= 1 && j >= 1 && i < row - 1 && j < col - 1)
     {
         int gx = 0, gy = 0;
@@ -17,14 +19,18 @@ applySobelKernel(int *src_image, int *res_image, int row, int col)
         {
             for (int v = -1; v <= 1; ++v)
             {
-                int pivotValue = src_image[(i + u * row) + (j + v)]; // Better to access only once to global memory
+                int pivotValue = src_image[(j + u) * col + (i + v)]; // Better to access only once to global memory
                 gx += pivotValue * sobelX[u + 1][v + 1];
                 gy += pivotValue * sobelY[u + 1][v + 1];
             }
         }
 
         // Calculate the value of gradient
-        res_image[i * row + j] = static_cast<int>(sqrtf(gx * gx + gy * gy));
+        res_image[j * col + i] = static_cast<int>(sqrtf(gx * gx + gy * gy));
+    }
+    else
+    {   
+        res_image[j * col + i] = 0;
     }
 }
 
@@ -57,6 +63,6 @@ computeHashKernel(int *hash, int *img, int *res, int n)
     if (tid == 0)
     {
         // Thread 0 writes result for this block to global mem
-        res[blockDim.x] = sdata[0];
+        res[blockIdx.x] = sdata[0];
     }
 }
