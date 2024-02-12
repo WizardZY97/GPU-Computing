@@ -1,6 +1,8 @@
 #include <iostream>
 #include <filesystem>
 #include <unordered_map>
+#include <chrono>
+
 #include "image_preproc.h"
 #include "LSH.h"
 
@@ -24,15 +26,26 @@ int main(int argc, char *argv[])
             const char *filename = s.c_str();
             
             std::vector<std::vector<int>> input_image = readImageToVec(filename);
+
+            auto start_Soble = std::chrono::high_resolution_clock::now();
             std::vector<std::vector<int>> feature_image = applySobel(input_image);
+            auto stop_Soble = std::chrono::high_resolution_clock::now();
+            auto duration_Soble = std::chrono::duration_cast<std::chrono::milliseconds>(stop_Soble - start_Soble);
+
             std::vector<int> feature_vec = flatten(feature_image);
 
+            auto start_Hash = std::chrono::high_resolution_clock::now();
             std::vector<int> hash = lsh.computeHash(feature_vec);
+            auto stop_Hash = std::chrono::high_resolution_clock::now();
+            auto duration_Hash = std::chrono::duration_cast<std::chrono::milliseconds>(stop_Hash - start_Hash);
 
             std::pair<std::string, std::vector<int>> one_pair(s, hash);
 
             files.push_back(s);
             mapFileHash.insert(one_pair);
+
+            std::cout << "Function Soble execution time of " << s << ": " << duration_Soble.count() << " milliseconds\n";
+            std::cout << "Function Hash execution time of " << s << ": " << duration_Hash.count() << " milliseconds\n";
         }
     }
 

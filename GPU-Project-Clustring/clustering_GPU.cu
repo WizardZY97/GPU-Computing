@@ -1,11 +1,18 @@
 #include <iostream>
 #include <filesystem>
 #include <unordered_map>
+#include <cuda_runtime.h>
+
 #include "image_preproc.h"
 #include "kernel_func.cuh"
 
 int main(int argc, char *argv[])
 {
+    // Utilities
+    cudaEvent_t start, stop;
+    cudaEventCreate(&start);
+    cudaEventCreate(&stop);
+
     // Target directory (pictures)
     std::string folder_path = "./Images";
 
@@ -42,26 +49,6 @@ int main(int argc, char *argv[])
             std::string s = entry.path().string();
             const char *filename = s.c_str();
 
-            // int *original_image_arr = new int[dim];
-            // readImageToArr(filename, original_image_arr);
-            // std::vector<std::vector<int>> input_image(SIZE, std::vector<int>(SIZE, 0));
-            // for (int i = 0; i < SIZE; i++)
-            // {
-            //     for (int j = 0; j < SIZE; j++)
-            //     {
-            //         input_image[i][j] = original_image_arr[i * SIZE + j];
-            //     }
-            // }
-            // std::vector<std::vector<int>> feature_image = applySobel(input_image);
-            // std::vector<int> feature_vec = flatten(feature_image);
-
-            // int *feature_image_arr = new int[dim];
-            // for (int i = 0; i < dim; i++)
-            // {
-            //     feature_image_arr[i] = feature_vec[i];
-            // }
-            // int *d_feature_image_arr; // device copies
-
             /******************* Kernel Soble Feature Start *******************/
 
             int *original_image_arr = new int[dim];
@@ -83,7 +70,12 @@ int main(int argc, char *argv[])
             dim3 dimGridSoble(ceil(SIZE / 32.0), ceil(SIZE / 32.0), 1);
 
             // Execute the kernel fucntion of Soble
+            float msecSoble = 0.0;
+            cudaEventRecord(start);
             applySobelKernel<<<dimGridSoble, dimBlockSoble>>>(d_original_image_arr, d_feature_image_arr, SIZE, SIZE);
+            cudaEventRecord(stop);
+            cudaEventSynchronize(stop);
+            cudaEventElapsedTime(&msecSoble, start, stop);
 
             // copy result data from GPU memory back to CPU memory
             cudaMemcpy(feature_image_arr, d_feature_image_arr, sizeof(int)*dim, cudaMemcpyDeviceToHost);
@@ -104,6 +96,8 @@ int main(int argc, char *argv[])
             dim3 dimBlockHashComp(1024, 1, 1);
             dim3 dimGridHashComp(ceil(dim / 1024.0), 1, 1);
             
+            float msecHash = 0.0;
+
             for (int i = 0; i < num_hashes; i++) 
             {
                 int *hash_value_collector = new int[SIZE];// Equal to the number of blocks
@@ -117,8 +111,14 @@ int main(int argc, char *argv[])
                 cudaMemcpy(d_hash_function, hash_functions[i], sizeof(int)*dim, cudaMemcpyHostToDevice);
                 cudaMemcpy(d_feature_image_arr, feature_image_arr, sizeof(int)*dim, cudaMemcpyHostToDevice);
 
-                // Execute the kernel fucntion of Soble
+                // Execute the kernel fucntion of Hash
+                float temp = 0.0;
+                cudaEventRecord(start);
                 computeHashKernel<<<dimGridHashComp, dimBlockHashComp>>>(d_hash_function, d_feature_image_arr, d_hash_value_collector, dim);
+                cudaEventRecord(stop);
+                cudaEventSynchronize(stop);
+                cudaEventElapsedTime(&temp, start, stop);
+                msecHash += temp;
 
                 // copy result data from GPU memory back to CPU memory
                 cudaMemcpy(hash_value_collector, d_hash_value_collector, sizeof(int)*SIZE, cudaMemcpyDeviceToHost);
@@ -148,6 +148,9 @@ int main(int argc, char *argv[])
 
             delete original_image_arr;
             delete feature_image_arr;
+
+            std::cout << "Soble Kernel execution time of " << s << ": " << msecSoble << " milliseconds\n";
+            std::cout << "Hash Kernel execution time of " << s << ": " << msecHash << " milliseconds\n";
         }
     }
 
@@ -167,7 +170,6 @@ int main(int argc, char *argv[])
             double dot_product = 0, norm_hash1 = 0, norm_hash2 = 0;
             for (int k = 0; k < num_hashes; ++k)
             {
-                std::cout << hash1[k] << "," << hash2[k] << std::endl;
                 double d_hash1 = static_cast<double>(hash1[k]);
                 double d_hash2 = static_cast<double>(hash2[k]);
 
@@ -184,6 +186,9 @@ int main(int argc, char *argv[])
             std::cout << "Similarity between " << files[i] << " and " << files[j] << " : " << sim << std::endl;
         }
     }
+
+    cudaEventDestroy(start);
+    cudaEventDestroy(stop);
 
     return 0;
 }
