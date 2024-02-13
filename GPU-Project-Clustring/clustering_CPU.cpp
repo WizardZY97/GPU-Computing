@@ -49,6 +49,7 @@ int main(int argc, char *argv[])
         }
     }
 
+    auto start_CosSim = std::chrono::high_resolution_clock::now();
     for (long unsigned int i = 0; i < files.size(); i++)
     {
         for (long unsigned int j = i + 1; j < files.size(); j++)
@@ -61,6 +62,9 @@ int main(int argc, char *argv[])
             std::cout << "Similarity between " << files[i] << " and " << files[j] << " : " << similarity << std::endl;
         }
     }
+    auto stop_CosSim = std::chrono::high_resolution_clock::now();
+    auto duration_CosSim = std::chrono::duration_cast<std::chrono::milliseconds>(stop_CosSim - start_CosSim);
+    std::cout << "Total Function Cosine Similarity execution time: " << duration_CosSim.count() << " milliseconds\n";
 
     return 0;
 }

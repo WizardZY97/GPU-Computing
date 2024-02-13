@@ -65,3 +65,27 @@ computeHashKernel(int *hash, int *img, int *res, int n)
         res[blockIdx.x] = sdata[0];
     }
 }
+
+__global__ void 
+computeCosSimKernel(int *hash1, int *hash2, float *dot_product, float *norm_hash1, float *norm_hash2, float num_hashes) {
+    __shared__ int sdata1[32];
+    __shared__ int sdata2[32];
+    
+    int idx = threadIdx.x + blockIdx.x * blockDim.x;
+    int tid = threadIdx.x;
+
+    if (tid < 32) {
+        sdata1[tid] = hash1[idx];
+        sdata2[tid] = hash2[idx];
+    }
+
+    if (idx < num_hashes) {
+        float t_dot_product = static_cast<float>(sdata1[idx]) * static_cast<float>(sdata2[idx]);
+        float t_norm_hash1 = static_cast<float>(sdata1[idx]) * static_cast<float>(sdata1[idx]);
+        float t_norm_hash2 = static_cast<float>(sdata2[idx]) * static_cast<float>(sdata2[idx]);
+        
+        atomicAdd(dot_product, t_dot_product);
+        atomicAdd(norm_hash1, t_norm_hash1);
+        atomicAdd(norm_hash2, t_norm_hash2);
+    }
+}

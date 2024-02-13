@@ -160,6 +160,7 @@ int main(int argc, char *argv[])
     }
     delete hash_functions;
 
+    float msecCosSim = 0.0;
     for (long unsigned int i = 0; i < files.size(); i++)
     {
         for (long unsigned int j = i + 1; j < files.size(); j++)
@@ -167,25 +168,56 @@ int main(int argc, char *argv[])
             std::vector<int> hash1 = mapFileHash.at(files[i]);
             std::vector<int> hash2 = mapFileHash.at(files[j]);
 
-            double dot_product = 0, norm_hash1 = 0, norm_hash2 = 0;
-            for (int k = 0; k < num_hashes; ++k)
-            {
-                double d_hash1 = static_cast<double>(hash1[k]);
-                double d_hash2 = static_cast<double>(hash2[k]);
+            float dot_product = 0, norm_hash1 = 0, norm_hash2 = 0;
 
-                dot_product += d_hash1 * d_hash2;
-                norm_hash1 += d_hash1 * d_hash1;
-                norm_hash2 += d_hash2 * d_hash2;
-            }
-            norm_hash1 = sqrt(norm_hash1);
-            norm_hash2 = sqrt(norm_hash2);
+            int *d_hash1 = nullptr, *d_hash2 = nullptr; // device copies for the input
+            float *d_dot_product = nullptr, *d_norm_hash1 = nullptr, *d_norm_hash2 = nullptr;    // device copies for the output
+
+            // allocate the GPU memory space
+            cudaMalloc((void **)&d_hash1, sizeof(int)*num_hashes);
+            cudaMalloc((void **)&d_hash2, sizeof(int)*num_hashes);
+            cudaMalloc((void **)&d_dot_product, sizeof(float));
+            cudaMalloc((void **)&d_norm_hash1, sizeof(float));
+            cudaMalloc((void **)&d_norm_hash2, sizeof(float));
+
+            // copy source data from CPU memory to GPU memory
+            cudaMemcpy(d_hash1, hash1.data(), sizeof(int)*num_hashes, cudaMemcpyHostToDevice);
+            cudaMemcpy(d_hash2, hash2.data(), sizeof(int)*num_hashes, cudaMemcpyHostToDevice);
+            cudaMemcpy(d_dot_product, &dot_product, sizeof(float), cudaMemcpyHostToDevice);// To avoid the random initial value 
+            cudaMemcpy(d_norm_hash1, &norm_hash1, sizeof(float), cudaMemcpyHostToDevice);  // To avoid the random initial value 
+            cudaMemcpy(d_norm_hash2, &norm_hash2, sizeof(float), cudaMemcpyHostToDevice);  // To avoid the random initial value 
+
+            // Define the size of the Grid and the Block (perfectly matching)
+            dim3 dimBlockSim(32, 1, 1);
+            dim3 dimGridSim(ceil(num_hashes / 32.0), 1, 1);
+
+            float temp = 0.0;
+            cudaEventRecord(start);
+            computeCosSimKernel<<<dimGridSim, dimBlockSim>>>(d_hash1, d_hash2, d_dot_product, d_norm_hash1, d_norm_hash2, num_hashes);
+            cudaEventRecord(stop);
+            cudaEventSynchronize(stop);
+            cudaEventElapsedTime(&temp, start, stop);
+            msecCosSim += temp;
+
+            // copy result data from GPU memory back to CPU memory
+            cudaMemcpy(&dot_product, d_dot_product, sizeof(float), cudaMemcpyDeviceToHost);
+            cudaMemcpy(&norm_hash1, d_norm_hash1, sizeof(float), cudaMemcpyDeviceToHost);
+            cudaMemcpy(&norm_hash2, d_norm_hash2, sizeof(float), cudaMemcpyDeviceToHost);
+
+            // Free the allocated GPU memory
+            cudaFree(d_hash1);
+            cudaFree(d_hash2);
+            cudaFree(d_dot_product);
+            cudaFree(d_norm_hash1);
+            cudaFree(d_norm_hash2);
 
             // Cosine similarity coefficient
-            double sim = dot_product / (norm_hash1 * norm_hash2);
+            double sim = dot_product / (sqrt(norm_hash1) * sqrt(norm_hash2));
 
             std::cout << "Similarity between " << files[i] << " and " << files[j] << " : " << sim << std::endl;
         }
     }
+    std::cout << "Total Cosine Similarity Kernel execution time: " << msecCosSim << " milliseconds\n";
 
     cudaEventDestroy(start);
     cudaEventDestroy(stop);
