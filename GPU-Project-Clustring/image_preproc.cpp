@@ -76,6 +76,7 @@ std::vector<std::vector<int>> applySobel(const std::vector<std::vector<int>>& in
     return result;
 }
 
+// Turn the 2D vector into 1D
 std::vector<int> flatten(const std::vector<std::vector<int>>& originalMat)
 {
     int rows = originalMat.size();
@@ -94,23 +95,4 @@ std::vector<int> flatten(const std::vector<std::vector<int>>& originalMat)
     }
     
     return vec;
-}
-
-void saveImage(const std::vector<std::vector<int>>& vec_image, const char* filename)
-{
-    // 获取图像的宽度和高度
-    const unsigned int width = vec_image[0].size();
-    const unsigned int height = vec_image.size();
-
-    // 创建CImg对象
-    cimg_library::CImg<int> image(width, height, 1, 1, 0);
-
-    // 将二维vector的数据复制到CImg对象中
-    for (unsigned int y = 0; y < height; ++y) {
-        for (unsigned int x = 0; x < width; ++x) {
-            image(x, y) = vec_image[y][x];
-        }
-    }
-
-    image.save(filename);
 }

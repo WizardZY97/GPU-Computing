@@ -11,12 +11,13 @@ int main(int argc, char *argv[])
     // Target directory (pictures)
     std::string folder_path = "./Images";
 
-    int num_hashes = 32, dim = SIZE*SIZE;
-    LSHCalculator lsh(num_hashes, dim);
+    int num_hashes = 32, dim = SIZE*SIZE;   // Define the number of hash functions & the size of one hash function
+    LSHCalculator lsh(num_hashes, dim);     // Initialize the hash functions
 
     std::unordered_map<std::string, std::vector<int>> mapFileHash;
     std::vector<std::string> files;
 
+    // Iterate all the images in the folder
     for (const auto &entry : std::filesystem::directory_iterator(folder_path))
     {
         // Check if the file is regular
@@ -50,6 +51,7 @@ int main(int argc, char *argv[])
     }
 
     auto start_CosSim = std::chrono::high_resolution_clock::now();
+    // Compute the similarity for each pair of images
     for (long unsigned int i = 0; i < files.size(); i++)
     {
         for (long unsigned int j = i + 1; j < files.size(); j++)

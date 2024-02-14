@@ -144,7 +144,7 @@ int main(int argc, char *argv[])
             std::pair<std::string, std::vector<int>> one_pair(s, hashes_image);
 
             files.push_back(s);
-            mapFileHash.insert(one_pair);
+            mapFileHash.insert(one_pair);   // Using HashMap to store the name of the file with its hash values
 
             delete original_image_arr;
             delete feature_image_arr;

@@ -16,6 +16,4 @@ std::vector<std::vector<int>> applySobel(const std::vector<std::vector<int>>& in
 
 std::vector<int> flatten(const std::vector<std::vector<int>>& originalMat);
 
-void saveImage(const std::vector<std::vector<int>>& vec_image, const char* filename);
-
 #endif

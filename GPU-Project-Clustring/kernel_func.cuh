@@ -75,8 +75,8 @@ computeCosSimKernel(int *hash1, int *hash2, float *dot_product, float *norm_hash
     int tid = threadIdx.x;
 
     if (tid < 32) {
-        sdata1[tid] = hash1[idx];
-        sdata2[tid] = hash2[idx];
+        sdata1[tid] = hash1[idx];   // load data into shared memory
+        sdata2[tid] = hash2[idx];   // load data into shared memory
     }
 
     if (idx < num_hashes) {
@@ -84,6 +84,7 @@ computeCosSimKernel(int *hash1, int *hash2, float *dot_product, float *norm_hash
         float t_norm_hash1 = static_cast<float>(sdata1[idx]) * static_cast<float>(sdata1[idx]);
         float t_norm_hash2 = static_cast<float>(sdata2[idx]) * static_cast<float>(sdata2[idx]);
         
+        // Using atomic operation for the reduction
         atomicAdd(dot_product, t_dot_product);
         atomicAdd(norm_hash1, t_norm_hash1);
         atomicAdd(norm_hash2, t_norm_hash2);
